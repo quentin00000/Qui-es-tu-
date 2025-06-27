@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Qui es-tu?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: #0d0f17;
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      color: #00ffe7;
+      text-align: center;
+    }
+    header {
+      background: linear-gradient(90deg, #00ffe7 0%, #0ff 100%);
+      color: #0d0f17;
+      padding: 40px 20px;
+      text-shadow: 0 0 10px #00ffe7;
+    }
+    section {
+      padding: 30px 20px;
+      border: 1px solid #00ffe7;
+      margin: 15px auto;
+      max-width: 700px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #00ffe7;
+      background-color: #121523;
+    }
+    ul { list-style: none; padding: 0; }
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #00ffe7;
+    }
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #00ffe7;
+      color: #0d0f17;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 0 10px #00ffe7;
+      transition: all 0.3s ease;
+      font-weight: 700;
+    }
+    button:hover {
+      background-color: #0ff;
+      box-shadow: 0 0 20px #0ff;
+      transform: scale(1.05);
+    }
+    a {
+      color: #00ffe7;
+      font-weight: 700;
+      text-decoration: none;
+      text-shadow: 0 0 8px #00ffe7;
+    }
+    input {
+      display: block;
+      margin: 10px auto;
+      padding: 12px;
+      width: 80%;
+      max-width: 350px;
+      border: 2px solid #00ffe7;
+      border-radius: 12px;
+      background-color: #121523;
+      color: #00ffe7;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 0 10px #00ffe7 inset;
+    }
+    nav {
+      background: #121523;
+      padding: 12px 0;
+      text-align: center;
+      box-shadow: 0 0 20px #00ffe7;
+      margin-bottom: 20px;
+    }
+    nav button {
+      background: transparent;
+      border: 2px solid #00ffe7;
+      color: #00ffe7;
+      padding: 10px 22px;
+      margin: 0 10px;
+      font-size: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 700;
+    }
+    nav button:hover {
+      background-color: #00ffe7;
+      color: #121523;
+      box-shadow: 0 0 15px #00ffe7;
+    }
+  </style>
+</head>
+<body>
+  <div id="player"></div>
+  <script>
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    var player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '0', width: '0', videoId: 'pv1_-XHy-Ak',
+        playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: 'pv1_-XHy-Ak', mute: 0 },
+        events: { onReady: (e) => { e.target.setVolume(10); e.target.playVideo(); } }
+      });
+    }
+  </script>
+
+  <nav>
+    <button onclick="switchTab('home')">Accueil</button>
+    <button onclick="switchTab('visitorForm')">Et toi ?</button>
+    <button onclick="switchTab('visitorList')">Visiteurs</button>
+
+  </nav>
+
+  <div id="home">
+    <header>
+      <h1>Salut, moi c’est Quentin Giroud 👋</h1>
+      <p>12 ans | Né le 29 février 2012 | Collège Michel Servet, Charlieu</p>
+    </header>
+    <section>
+      <h2>À propos</h2>
+      <p>J’habite à Saint-Nizier, né à Roanne. J’adore les jeux vidéo, le vélo, sortir, la techno et je suis bien organisé 📚</p>
+    </section>
+    <section>
+      <button onclick="showMsg()">Clique ici pour dire coucou 😎</button>
+      <p id="coolMessage"></p>
+      <p><a href="https://www.twitch.tv/x1mecx" target="_blank">📺 Ma chaîne Twitch - X1mecX</a></p>
+    </section>
+  </div>
+
+  <div id="visitorForm" style="display:none;">
+    <section>
+      <h2>Et toi, t'es qui ? 😏</h2>
+      <input type="text" id="prenom" placeholder="Ton prénom" />
+      <input type="number" id="age" placeholder="Ton âge" />
+      <input type="text" id="passions" placeholder="Tes passions" />
+      <button id="btnAddVisitor">Valide ton style 💥</button>
+
+      <p id="profilVisiteur"></p>
+    </section>
+  </div>
+
+  <div id="visitorList" style="display:none;">
+    <section>
+      <h2>Liste des visiteurs</h2>
+      <ul id="listeVisiteurs"></ul>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    document.getElementById("btnAddVisitor").addEventListener("click", addVisitor);
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyB2ddMd_j1Gc-Y9wqW74W0V3sEqCPauc4A",
+      authDomain: "qui-es-tu-5cb3d.firebaseapp.com",
+      projectId: "qui-es-tu-5cb3d",
+      storageBucket: "qui-es-tu-5cb3d.firebasestorage.app",
+      messagingSenderId: "24225217179",
+      appId: "1:24225217179:web:121e9a86e3fd8d2514643e",
+      measurementId: "G-MSZ22LZWZ6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function addVisitor() {
+      const nom = document.getElementById("prenom").value.trim();
+      const age = document.getElementById("age").value.trim();
+      const passions = document.getElementById("passions").value.trim();
+
+      if (nom && age && passions) {
+        await addDoc(collection(db, "visiteurs"), { nom, age, passions });
+        document.getElementById("profilVisiteur").textContent = `🔥 ${nom} a ${age} ans et kiffe : ${passions}`;
+        document.getElementById("prenom").value = '';
+        document.getElementById("age").value = '';
+        document.getElementById("passions").value = '';
+        afficherVisiteurs();
+      } else {
+        document.getElementById("profilVisiteur").textContent = "Remplis tout stp 😜";
+      }
+    }
+
+    async function afficherVisiteurs() {
+      const liste = document.getElementById("listeVisiteurs");
+      liste.innerHTML = '';
+      const querySnapshot = await getDocs(collection(db, "visiteurs"));
+      querySnapshot.forEach((doc) => {
+        const v = doc.data();
+        const li = document.createElement('li');
+        li.textContent = `${v.nom} | ${v.age} ans | ${v.passions}`;
+        liste.appendChild(li);
+      });
+    }
+
+    window.switchTab = function(tab) {
+      document.getElementById('home').style.display = 'none';
+      document.getElementById('visitorForm').style.display = 'none';
+      document.getElementById('visitorList').style.display = 'none';
+      document.getElementById(tab).style.display = 'block';
+      if (tab === 'visitorList') afficherVisiteurs();
+    }
+
+    window.showMsg = function() {
+      document.getElementById("coolMessage").textContent = "Yo t’as cliqué, t’es validé par Quentin 💯🔥";
+    }
+  </script>
+</body>
+</html>
